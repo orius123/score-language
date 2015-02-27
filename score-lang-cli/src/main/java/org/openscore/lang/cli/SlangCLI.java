@@ -44,8 +44,10 @@ public class SlangCLI implements CommandMarker {
     public static final String TRIGGERED_FLOW_MSG = "Triggered flow : ";
     public static final String WITH_EXECUTION_ID_MSG = "Execution id: ";
     public static final String FLOW_EXECUTION_TIME_TOOK = ", duration: ";
+    private static final String NO_FILE = "none";
     private static final String CURRENTLY = "You are CURRENTLY running Slang version: ";
     private final static Logger logger = Logger.getLogger(SlangCLI.class);
+
 
     @Autowired
     private ScoreServices scoreServices;
@@ -63,11 +65,15 @@ public class SlangCLI implements CommandMarker {
 
     @CliCommand(value = "run", help = "triggers a slang flow")
     public String run(
-            @CliOption(key = {"", "f", "file"}, mandatory = true, help = "Path to filename. e.g. slang run --f C:\\Slang\\flow.yaml") final File file,
+            @CliOption(key = {"", "f", "file"}, mandatory = false, help = "Path to filename. e.g. slang run --f C:\\Slang\\flow.yaml", specifiedDefaultValue = NO_FILE,unspecifiedDefaultValue = NO_FILE) final File file,
             @CliOption(key = {"cp", "classpath"}, mandatory = false, help = "Classpath , a directory comma separated list to flow dependencies, by default it will take flow file dir") final List<String> classPath,
             @CliOption(key = {"i", "inputs"}, mandatory = false, help = "inputs in a key=value comma separated list") final Map<String,? extends Serializable> inputs,
             @CliOption(key = {"if", "input-file"}, mandatory = false, help = "comma separated list of input file locations") final List<String> inputFiles,
             @CliOption(key = {"spf", "system-property-file"}, mandatory = false, help = "comma separated list of system property file locations") final List<String> systemPropertyFiles) throws IOException {
+
+        if(file.getName().equals(NO_FILE)){
+            return triggerNoFileMsg();
+        }
 
         CompilationArtifact compilationArtifact = compilerHelper.compile(file.getAbsolutePath(), classPath);
         Map<String, ? extends Serializable> systemProperties = compilerHelper.loadSystemProperties(systemPropertyFiles);
@@ -91,6 +97,10 @@ public class SlangCLI implements CommandMarker {
         }
         id = scoreServices.trigger(compilationArtifact, mergedInputs, systemProperties);
         return triggerAsyncMsg(id, compilationArtifact.getExecutionPlan().getName());
+    }
+
+    public static String triggerNoFileMsg() {
+        return "The run command requires \"--f\" option followed by the path to a file. Use \"help run\" for more information.";
     }
 
     @CliCommand(value = "env", help = "Set environment var relevant to the CLI")
