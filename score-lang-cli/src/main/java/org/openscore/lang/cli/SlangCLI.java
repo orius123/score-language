@@ -72,7 +72,7 @@ public class SlangCLI implements CommandMarker {
             @CliOption(key = {"spf", "system-property-file"}, mandatory = false, help = "comma separated list of system property file locations") final List<String> systemPropertyFiles) throws IOException {
 
         if(file.getName().equals(NO_FILE)){
-            return triggerNoFileMsg();
+            return noFileSpecifiedMsg();
         }
 
         CompilationArtifact compilationArtifact = compilerHelper.compile(file.getAbsolutePath(), classPath);
@@ -99,7 +99,7 @@ public class SlangCLI implements CommandMarker {
         return triggerAsyncMsg(id, compilationArtifact.getExecutionPlan().getName());
     }
 
-    public static String triggerNoFileMsg() {
+    public static String noFileSpecifiedMsg() {
         return "The run command requires \"--f\" option followed by the path to a file. Use \"help run\" for more information.";
     }
 
